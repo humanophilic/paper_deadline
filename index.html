@@ -1,222 +1,44 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>卒論/修論締め切りカウントダウン</title>
-    <style>
-      body {
-        font-family: "Helvetica Neue", Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f2f5;
-        color: #333;
-        overflow: hidden; /* コンテンツがはみ出さないように */
-      }
-      .container {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-evenly; /* 画面全体に均等配置 */
-        align-items: center;
-        width: 100%;
-        height: 100%;
-        padding: 5vh 5vw; /* 余裕を持たせる */
-        box-sizing: border-box;
-      }
-      .countdown-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        max-width: 1400px; /* 大きすぎないように制限 */
-      }
-      h2 {
-        font-size: 3.5rem; /* ほどよい大きさ */
-        margin: 0 0 2vh 0;
-        text-align: center;
-        color: #444;
-      }
-      .countdown {
-        background: white;
-        padding: 2rem 4rem;
-        border-radius: 20px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        display: flex;
-        flex-wrap: nowrap;
-        justify-content: center;
-        width: auto;
-      }
-      .time-block {
-        display: flex;
-        flex-direction: row;
-        align-items: baseline;
-        margin: 0 2rem;
-      }
-      .number {
-        font-size: 10rem;
-        font-weight: bold;
-        line-height: 1;
-        color: #d32f2f;
-      }
-      .unit {
-        font-size: 4rem;
-        color: #666;
-        margin-left: 1rem;
-        font-weight: bold;
-      }
-      .deadline-info {
-        font-size: 3rem;
-        color: #666;
-        margin-top: 2vh;
-      }
-      .expired-message {
-        font-size: 10rem;
-        font-weight: 900;
-        background: linear-gradient(
-          to right,
-          #ff0000,
-          #ff7f00,
-          #ffff00,
-          #00ff00,
-          #00ffff,
-          #0000ff,
-          #8b00ff,
-          #ff0000
-        );
-        background-size: 400% auto;
-        color: transparent;
-        -webkit-background-clip: text;
-        background-clip: text;
-        animation: rainbow 3s linear infinite;
-        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-        letter-spacing: 2px;
-      }
-      @keyframes rainbow {
-        to {
-          background-position: 400% 0;
-        }
-      }
-      /* レスポンシブ対応 */
-      @media (max-width: 1000px) {
-        .number {
-          font-size: 10rem;
-        }
-        .unit {
-          font-size: 3rem;
-        }
-        h2 {
-          font-size: 5rem;
-        }
-        .time-block {
-          margin: 0 2rem;
-        }
-      }
-      @media (max-width: 600px) {
-        .container {
-          padding: 20px 10px;
-        }
-        .number {
-          font-size: 6rem;
-        }
-        .unit {
-          font-size: 2rem;
-        }
-        h2 {
-          font-size: 3rem;
-        }
-        .deadline-info {
-          font-size: 2rem;
-        }
-        .countdown {
-          flex-wrap: wrap;
-          padding: 2rem;
-        }
-        .time-block {
-          margin: 0 5px;
-        }
-        .expired-message {
-          font-size: 2rem;
-        }
-        body {
-          overflow-y: auto;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <!-- 卒論 -->
-      <div class="countdown-wrapper">
-        <h2>卒論提出締め切りまで</h2>
-        <div id="countdown-bachelor" class="countdown">計算中...</div>
-        <div class="deadline-info">締め切り: 2026年2月9日 17:00 (JST)</div>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>卒論/修論締め切りカウントダウン</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      overflow: hidden;
+    }
+    
+    .webgl {
+      position: fixed;
+      top: 0;
+      left: 0;
+      outline: none;
+    }
+  </style>
+<script async src="https://unpkg.com/es-module-shims@1.5.8/dist/es-module-shims.js"></script>
+<script type="importmap">
+   {
+       "imports": {
+           "three": "https://unpkg.com/three@0.142.0/build/three.module.js",
+           "OrbitControls": "https://unpkg.com/three@0.142.0/examples/jsm/controls/OrbitControls.js"
+       }
+   }
+</script>
+ 
+<script src="./main.js" type="module"></script>
 
-      <!-- 修論 -->
-      <div class="countdown-wrapper">
-        <h2>修論提出締め切りまで</h2>
-        <div id="countdown-master" class="countdown">計算中...</div>
-        <div class="deadline-info">締め切り: 2026年2月13日 15:00 (JST)</div>
-      </div>
-    </div>
 
-    <script>
-      function startCountdown(elementId, deadlineString) {
-        const deadline = new Date(deadlineString).getTime();
-        const countdownElement = document.getElementById(elementId);
-
-        function update() {
-          const now = new Date().getTime();
-          const distance = deadline - now;
-
-          if (distance < 0) {
-            countdownElement.innerHTML = `<div class="expired-message">期限を超過しています！！！</div>`;
-            return;
-          }
-
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor(
-            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-          );
-          const minutes = Math.floor(
-            (distance % (1000 * 60 * 60)) / (1000 * 60)
-          );
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-          countdownElement.innerHTML = `
-                <div class="time-block">
-                    <span class="number">${days}</span>
-                    <span class="unit">日</span>
-                </div>
-                <div class="time-block">
-                    <span class="number">${hours}</span>
-                    <span class="unit">時間</span>
-                </div>
-                <div class="time-block">
-                    <span class="number">${minutes}</span>
-                    <span class="unit">分</span>
-                </div>
-                <div class="time-block">
-                    <span class="number">${seconds}</span>
-                    <span class="unit">秒</span>
-                </div>
-            `;
-        }
-
-        // 初回実行
-        update();
-        // 1秒ごとに更新
-        setInterval(update, 1000);
-      }
-
-      // 卒論: 2026年2月9日 17:00
-      startCountdown("countdown-bachelor", "2026-02-09T17:00:00+09:00");
-
-      // 修論: 2026年2月13日 15:00
-      startCountdown("countdown-master", "2026-02-13T15:00:00+09:00");
-    </script>
-  </body>
+</head>
+<body>
+  <div class="container">
+    <canvas class="webgl"></canvas>
+  </div>
+</body>Ï
 </html>
