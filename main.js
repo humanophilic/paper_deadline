@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import {OrbitControls} from 'https://unpkg.com/three@0.142.0/examples/jsm/controls/OrbitControls.js';
 import {FontLoader} from 'https://unpkg.com/three@0.142.0/examples/jsm/loaders/FontLoader.js';
 import {TextGeometry} from 'https://unpkg.com/three@0.142.0/examples/jsm/geometries/TextGeometry.js';
+import {GLTFLoader} from 'https://unpkg.com/three@0.142.0/examples/jsm/loaders/GLTFLoader.js';
+import {DRACOLoader} from 'https://unpkg.com/three@0.142.0/examples/jsm/loaders/DRACOLoader.js';
  
 const canvas = document.querySelector('.webgl');
 
@@ -13,9 +15,9 @@ const sizes = {
     height: window.innerHeight
 };
 
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
-camera.position.z = 15;
-camera.position.y = 5;
+const camera = new THREE.PerspectiveCamera(77, sizes.width / sizes.height, 0.1, 100);
+camera.position.z = 13;
+camera.position.y = 0;
 scene.add(camera);
 
 // ライトを追加
@@ -29,8 +31,10 @@ scene.add(pointLight);
 // 時計の数字を管理する配列
 let bachelorDigitMeshes = [];
 let masterDigitMeshes = [];
-let bachelorTitleMeshes = [];
-let masterTitleMeshes = [];
+let bachelorUnitMeshes = [];
+let masterUnitMeshes = [];
+let bachelorTitleModel = null;
+let masterTitleModel = null;
 let animatingDigits = [];
 let font = null;
 let previousBachelorTime = '';
@@ -40,6 +44,12 @@ let previousMasterTime = '';
 const bachelorDeadline = new Date('2026-02-09T17:00:00+09:00');
 const masterDeadline = new Date('2026-02-13T15:00:00+09:00');
 
+// GLTFローダーを初期化
+const gltfLoader = new GLTFLoader();
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+gltfLoader.setDRACOLoader(dracoLoader);
+
 const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -47,65 +57,90 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 // OrbitControlsを追加
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
+let modelsLoaded = false;
+let fontLoaded = false;
 
-// フォントを読み込み
 const fontLoader = new FontLoader();
+
 fontLoader.load(
     'https://unpkg.com/three@0.142.0/examples/fonts/helvetiker_bold.typeface.json',
     (loadedFont) => {
         font = loadedFont;
-        createTitles();
-        updateClock();
+        fontLoaded = true;
+        checkAndStart();
     }
 );
 
-// タイトルを作成
-function createTitles() {
-    // 卒論のタイトル
-    const bachelorTitle = '卒論提出締め切りまで';
-    createTitle(bachelorTitle, 5, bachelorTitleMeshes, 0.8, 0xff6b6b);
-    
-    // 修論のタイトル
-    const masterTitle = '修論提出締め切りまで';
-    createTitle(masterTitle, -5, masterTitleMeshes, 0.8, 0x4ecdc4);
+// GLBモデルを読み込み
+gltfLoader.load(
+    './models/sotsuron.glb',
+    (gltf) => {
+        bachelorTitleModel = gltf.scene;
+        bachelorTitleModel.position.set(-7.5, 7.5, 0);
+        bachelorTitleModel.rotation.x = Math.PI * 0.5;
+        bachelorTitleModel.scale.set(2, 2, 2);
+        
+        // モデルの全メッシュにマテリアルを適用
+        bachelorTitleModel.traverse((child) => {
+            if (child.isMesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                    color: 0xff6b6b,
+                    metalness: 0.3,
+                    roughness: 0.4
+                });
+            }
+        });
+        
+        scene.add(bachelorTitleModel);
+        checkModelsLoaded();
+    },
+    undefined,
+    (error) => {
+        console.error('卒論モデルの読み込みエラー:', error);
+    }
+);
+
+gltfLoader.load(
+    './models/shuuron.glb',
+    (gltf) => {
+        masterTitleModel = gltf.scene;
+        masterTitleModel.position.set(-7, 1.5, 0);
+        masterTitleModel.scale.set(2, 2, 2);
+        masterTitleModel.rotation.x = Math.PI * 0.5;
+        
+        // モデルの全メッシュにマテリアルを適用
+        masterTitleModel.traverse((child) => {
+            if (child.isMesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                    color: 0x4ecdc4,
+                    metalness: 0.3,
+                    roughness: 0.4
+                });
+            }
+        });
+        
+        scene.add(masterTitleModel);
+        checkModelsLoaded();
+    },
+    undefined,
+    (error) => {
+        console.error('修論モデルの読み込みエラー:', error);
+    }
+);
+
+function checkModelsLoaded() {
+    if (bachelorTitleModel && masterTitleModel) {
+        modelsLoaded = true;
+        checkAndStart();
+    }
 }
 
-// 個別のタイトルを作成
-function createTitle(text, yPos, meshArray, size, color) {
-    const chars = text.split('');
-    const spacing = size * 1.2;
-    const startX = -(chars.length * spacing) / 2;
-    
-    chars.forEach((char, index) => {
-        const textGeometry = new TextGeometry(char, {
-            font: font,
-            size: size,
-            height: 0.2,
-            curveSegments: 8,
-            bevelEnabled: true,
-            bevelThickness: 0.02,
-            bevelSize: 0.01,
-            bevelOffset: 0,
-            bevelSegments: 3
-        });
-        
-        textGeometry.center();
-        
-        const material = new THREE.MeshStandardMaterial({ 
-            color: color,
-            metalness: 0.2,
-            roughness: 0.5
-        });
-        
-        const mesh = new THREE.Mesh(textGeometry, material);
-        mesh.position.x = startX + index * spacing;
-        mesh.position.y = yPos + 3;
-        mesh.position.z = 0;
-        
-        scene.add(mesh);
-        meshArray.push(mesh);
-    });
+function checkAndStart() {
+    if (fontLoaded && modelsLoaded) {
+        updateClock();
+    }
 }
+
 
 // 残り時間を計算
 function getTimeRemaining(deadline) {
@@ -144,7 +179,7 @@ function updateTimer(timeString, previousTime, digitMeshes, yPos) {
     if (previousTime !== timeString) {
         const chars = timeString.split('');
         const previousChars = previousTime.split('');
-        const spacing = 2;
+        const spacing = 1.8;
         const startX = -(chars.length * spacing) / 2;
         
         // 初回の場合はすべて作成
@@ -152,6 +187,10 @@ function updateTimer(timeString, previousTime, digitMeshes, yPos) {
             chars.forEach((char, index) => {
                 createDigit(char, startX + index * spacing, yPos, index, digitMeshes);
             });
+            
+            // 単位も作成（初回のみ）
+            const unitMeshes = yPos > 0 ? bachelorUnitMeshes : masterUnitMeshes;
+            createUnits(startX, yPos, spacing, unitMeshes);
         } else {
             // 変更された文字だけアニメーション
             chars.forEach((char, index) => {
@@ -181,6 +220,47 @@ function updateTimer(timeString, previousTime, digitMeshes, yPos) {
             });
         }
     }
+}
+
+// 単位を作成（day, hour, min, sec）
+function createUnits(startX, yPos, spacing, unitMeshes) {
+    const units = ['day', 'hour', 'min', 'sec'];
+    // 形式: DD:HH:MM:SS (11文字)
+    // 位置: 0-1(day), 3-4(hour), 6-7(min), 9-10(sec)
+    const positions = [0.5, 3.5, 6.5, 9.5]; // 各ペアの中心位置
+    
+    units.forEach((unit, i) => {
+        const unitX = startX + positions[i] * spacing;
+        const unitY = yPos - 1.8;
+        
+        const textGeometry = new TextGeometry(unit, {
+            font: font,
+            size: 0.5,
+            height: 0.1,
+            curveSegments: 8,
+            bevelEnabled: true,
+            bevelThickness: 0.01,
+            bevelSize: 0.01,
+            bevelOffset: 0,
+            bevelSegments: 3
+        });
+        
+        textGeometry.center();
+        
+        const material = new THREE.MeshStandardMaterial({ 
+            color: 0xaaaaaa,
+            metalness: 0.2,
+            roughness: 0.5
+        });
+        
+        const mesh = new THREE.Mesh(textGeometry, material);
+        mesh.position.x = unitX;
+        mesh.position.y = unitY;
+        mesh.position.z = 0;
+        
+        scene.add(mesh);
+        unitMeshes.push(mesh);
+    });
 }
 
 // 個別の数字を作成
