@@ -197,6 +197,8 @@ function updateTimer(timeString, previousTime, digitMeshes, yPos) {
                 if (char !== previousChars[index]) {
                     // 古い数字を落下させる
                     const oldMesh = digitMeshes[index];
+                    // 落ちる数字を赤色に変更
+                    oldMesh.material.color.setHex(0xff0000);
                     if (oldMesh) {
                         animatingDigits.push({
                             mesh: oldMesh,
@@ -280,7 +282,7 @@ function createDigit(char, x, y, index, digitMeshes) {
     textGeometry.center();
     
     const material = new THREE.MeshStandardMaterial({ 
-        color: 0x00ff88,
+        color: 0xffffff,
         metalness: 0.3,
         roughness: 0.4
     });
