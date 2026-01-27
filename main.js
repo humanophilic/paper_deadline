@@ -166,7 +166,7 @@ gltfLoader.load(
         masterDeadlineModel = gltf.scene;
         masterDeadlineModel.position.set(-8.5, -7, 0);
         masterDeadlineModel.scale.set(1.5, 1.5, 1.5);
-        masterDeadlineModel.rotation.x = Math.PI * 0.5;
+        masterDeadlineModel.rotation.x = Math.PI * 0.46;
         
         // モデルの全メッシュにマテリアルを適用
         masterDeadlineModel.traverse((child) => {
