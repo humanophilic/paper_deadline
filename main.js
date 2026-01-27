@@ -25,7 +25,7 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
 const pointLight = new THREE.PointLight(0xffffff, 1);
-pointLight.position.set(10, 10, 10);
+pointLight.position.set(0, 0, 10);
 scene.add(pointLight);
 
 // 時計の数字を管理する配列
@@ -78,9 +78,9 @@ gltfLoader.load(
     './models/sotsuron.glb',
     (gltf) => {
         bachelorTitleModel = gltf.scene;
-        bachelorTitleModel.position.set(-7.5, 7.5, 0);
-        bachelorTitleModel.rotation.x = Math.PI * 0.5;
-        bachelorTitleModel.scale.set(2, 2, 2);
+        bachelorTitleModel.position.set(-7.8, 3.8, 0);
+        bachelorTitleModel.rotation.x = Math.PI * 0.55;
+        bachelorTitleModel.scale.set(2.5, 2.5, 2.5);
         
         // モデルの全メッシュにマテリアルを適用
         bachelorTitleModel.traverse((child) => {
@@ -106,8 +106,8 @@ gltfLoader.load(
     './models/shuuron.glb',
     (gltf) => {
         masterTitleModel = gltf.scene;
-        masterTitleModel.position.set(-7, 2.0, 0);
-        masterTitleModel.scale.set(2, 2, 2);
+        masterTitleModel.position.set(-7.8, -8, 0);
+        masterTitleModel.scale.set(2.5, 2.5, 2.5);
         masterTitleModel.rotation.x = Math.PI * 0.5;
         
         // モデルの全メッシュにマテリアルを適用
@@ -135,7 +135,7 @@ gltfLoader.load(
     './models/sotsuron_deadline.glb',
     (gltf) => {
         bachelorDeadlineModel = gltf.scene;
-        bachelorDeadlineModel.position.set(-8, 1, 0);
+        bachelorDeadlineModel.position.set(-8.2, 1.2, 0);
         bachelorDeadlineModel.rotation.x = Math.PI * 0.5;
         bachelorDeadlineModel.scale.set(1.5, 1.5, 1.5);
         
@@ -164,7 +164,7 @@ gltfLoader.load(
     './models/shuuron_deadline.glb',
     (gltf) => {
         masterDeadlineModel = gltf.scene;
-        masterDeadlineModel.position.set(-8, -7.5, 0);
+        masterDeadlineModel.position.set(-8.5, -7, 0);
         masterDeadlineModel.scale.set(1.5, 1.5, 1.5);
         masterDeadlineModel.rotation.x = Math.PI * 0.5;
         
