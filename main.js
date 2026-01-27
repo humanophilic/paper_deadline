@@ -25,7 +25,7 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 
 const pointLight = new THREE.PointLight(0xffffff, 1);
-pointLight.position.set(10, 10, 10);
+pointLight.position.set(0, 0, 10);
 scene.add(pointLight);
 
 // 時計の数字を管理する配列
@@ -35,6 +35,8 @@ let bachelorUnitMeshes = [];
 let masterUnitMeshes = [];
 let bachelorTitleModel = null;
 let masterTitleModel = null;
+let bachelorDeadlineModel = null;
+let masterDeadlineModel = null;
 let animatingDigits = [];
 let font = null;
 let previousBachelorTime = '';
@@ -76,9 +78,9 @@ gltfLoader.load(
     './models/sotsuron.glb',
     (gltf) => {
         bachelorTitleModel = gltf.scene;
-        bachelorTitleModel.position.set(-7.5, 7.5, 0);
-        bachelorTitleModel.rotation.x = Math.PI * 0.5;
-        bachelorTitleModel.scale.set(2, 2, 2);
+        bachelorTitleModel.position.set(-7.8, 3.8, 0);
+        bachelorTitleModel.rotation.x = Math.PI * 0.55;
+        bachelorTitleModel.scale.set(2.5, 2.5, 2.5);
         
         // モデルの全メッシュにマテリアルを適用
         bachelorTitleModel.traverse((child) => {
@@ -104,8 +106,8 @@ gltfLoader.load(
     './models/shuuron.glb',
     (gltf) => {
         masterTitleModel = gltf.scene;
-        masterTitleModel.position.set(-7, 1.5, 0);
-        masterTitleModel.scale.set(2, 2, 2);
+        masterTitleModel.position.set(-7.8, -8, 0);
+        masterTitleModel.scale.set(2.5, 2.5, 2.5);
         masterTitleModel.rotation.x = Math.PI * 0.5;
         
         // モデルの全メッシュにマテリアルを適用
@@ -128,8 +130,66 @@ gltfLoader.load(
     }
 );
 
+// 卒論締め切りモデルを読み込み
+gltfLoader.load(
+    './models/sotsuron_deadline.glb',
+    (gltf) => {
+        bachelorDeadlineModel = gltf.scene;
+        bachelorDeadlineModel.position.set(-8.2, 1.2, 0);
+        bachelorDeadlineModel.rotation.x = Math.PI * 0.5;
+        bachelorDeadlineModel.scale.set(1.5, 1.5, 1.5);
+        
+        // モデルの全メッシュにマテリアルを適用
+        bachelorDeadlineModel.traverse((child) => {
+            if (child.isMesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                    color: 0xff6b6b,
+                    metalness: 0.3,
+                    roughness: 0.4
+                });
+            }
+        });
+        
+        scene.add(bachelorDeadlineModel);
+        checkModelsLoaded();
+    },
+    undefined,
+    (error) => {
+        console.error('卒論締め切りモデルの読み込みエラー:', error);
+    }
+);
+
+// 修論締め切りモデルを読み込み
+gltfLoader.load(
+    './models/shuuron_deadline.glb',
+    (gltf) => {
+        masterDeadlineModel = gltf.scene;
+        masterDeadlineModel.position.set(-8.5, -7, 0);
+        masterDeadlineModel.scale.set(1.5, 1.5, 1.5);
+        masterDeadlineModel.rotation.x = Math.PI * 0.46;
+        
+        // モデルの全メッシュにマテリアルを適用
+        masterDeadlineModel.traverse((child) => {
+            if (child.isMesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                    color: 0x4ecdc4,
+                    metalness: 0.3,
+                    roughness: 0.4
+                });
+            }
+        });
+        
+        scene.add(masterDeadlineModel);
+        checkModelsLoaded();
+    },
+    undefined,
+    (error) => {
+        console.error('修論締め切りモデルの読み込みエラー:', error);
+    }
+);
+
 function checkModelsLoaded() {
-    if (bachelorTitleModel && masterTitleModel) {
+    if (bachelorTitleModel && masterTitleModel && bachelorDeadlineModel && masterDeadlineModel) {
         modelsLoaded = true;
         checkAndStart();
     }
@@ -169,7 +229,7 @@ function updateClock() {
     previousBachelorTime = bachelorTimeString;
     
     // 修論タイマーを更新
-    updateTimer(masterTimeString, previousMasterTime, masterDigitMeshes, -5);
+    updateTimer(masterTimeString, previousMasterTime, masterDigitMeshes, -4.5);
     previousMasterTime = masterTimeString;
 }
 
