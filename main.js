@@ -43,8 +43,8 @@ let previousBachelorTime = '';
 let previousMasterTime = '';
 
 // 締め切り時刻
-const bachelorDeadline = new Date('2026-02-09T17:00:00+09:00');
-const masterDeadline = new Date('2026-02-13T15:00:00+09:00');
+const bachelorDeadline = new Date('2027-02-09T17:00:00+09:00');
+const masterDeadline = new Date('2027-02-13T15:00:00+09:00');
 
 // GLTFローダーを初期化
 const gltfLoader = new GLTFLoader();
@@ -78,7 +78,7 @@ gltfLoader.load(
     './models/sotsuron.glb',
     (gltf) => {
         bachelorTitleModel = gltf.scene;
-        bachelorTitleModel.position.set(-7.8, 3.8, 0);
+        bachelorTitleModel.position.set(-7.8, 2.8, 0);
         bachelorTitleModel.rotation.x = Math.PI * 0.55;
         bachelorTitleModel.scale.set(2.5, 2.5, 2.5);
         
@@ -106,7 +106,7 @@ gltfLoader.load(
     './models/shuuron.glb',
     (gltf) => {
         masterTitleModel = gltf.scene;
-        masterTitleModel.position.set(-7.8, -8, 0);
+        masterTitleModel.position.set(-7.8, -7, 0);
         masterTitleModel.scale.set(2.5, 2.5, 2.5);
         masterTitleModel.rotation.x = Math.PI * 0.5;
         
@@ -127,64 +127,6 @@ gltfLoader.load(
     undefined,
     (error) => {
         console.error('修論モデルの読み込みエラー:', error);
-    }
-);
-
-// 卒論締め切りモデルを読み込み
-gltfLoader.load(
-    './models/sotsuron_deadline.glb',
-    (gltf) => {
-        bachelorDeadlineModel = gltf.scene;
-        bachelorDeadlineModel.position.set(-8.2, 1.2, 0);
-        bachelorDeadlineModel.rotation.x = Math.PI * 0.5;
-        bachelorDeadlineModel.scale.set(1.5, 1.5, 1.5);
-        
-        // モデルの全メッシュにマテリアルを適用
-        bachelorDeadlineModel.traverse((child) => {
-            if (child.isMesh) {
-                child.material = new THREE.MeshStandardMaterial({
-                    color: 0xff6b6b,
-                    metalness: 0.3,
-                    roughness: 0.4
-                });
-            }
-        });
-        
-        scene.add(bachelorDeadlineModel);
-        checkModelsLoaded();
-    },
-    undefined,
-    (error) => {
-        console.error('卒論締め切りモデルの読み込みエラー:', error);
-    }
-);
-
-// 修論締め切りモデルを読み込み
-gltfLoader.load(
-    './models/shuuron_deadline.glb',
-    (gltf) => {
-        masterDeadlineModel = gltf.scene;
-        masterDeadlineModel.position.set(-8.5, -7, 0);
-        masterDeadlineModel.scale.set(1.5, 1.5, 1.5);
-        masterDeadlineModel.rotation.x = Math.PI * 0.46;
-        
-        // モデルの全メッシュにマテリアルを適用
-        masterDeadlineModel.traverse((child) => {
-            if (child.isMesh) {
-                child.material = new THREE.MeshStandardMaterial({
-                    color: 0x4ecdc4,
-                    metalness: 0.3,
-                    roughness: 0.4
-                });
-            }
-        });
-        
-        scene.add(masterDeadlineModel);
-        checkModelsLoaded();
-    },
-    undefined,
-    (error) => {
-        console.error('修論締め切りモデルの読み込みエラー:', error);
     }
 );
 
@@ -225,11 +167,11 @@ function updateClock() {
     const masterTimeString = getTimeRemaining(masterDeadline);
     
     // 卒論タイマーを更新
-    updateTimer(bachelorTimeString, previousBachelorTime, bachelorDigitMeshes, 5);
+    updateTimer(bachelorTimeString, previousBachelorTime, bachelorDigitMeshes, 4);
     previousBachelorTime = bachelorTimeString;
     
     // 修論タイマーを更新
-    updateTimer(masterTimeString, previousMasterTime, masterDigitMeshes, -4.5);
+    updateTimer(masterTimeString, previousMasterTime, masterDigitMeshes, -3.5);
     previousMasterTime = masterTimeString;
 }
 
